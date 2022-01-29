@@ -21,8 +21,8 @@ __global__ void prod(int *a, int *b, int *c) {
 int main() {
     int *a, *b, *c;
     int *d_a, *d_b, *d_c;
-    dim3 grid(16, 1);
-    dim3 block(1, 16);
+    dim3 grid(1, 16);
+    dim3 block(16, 1);
     // variables pour le calcule du temps
     cudaEvent_t start, stop;
     float elapsed_time;
