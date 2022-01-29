@@ -9,18 +9,18 @@ __global__ void prod(int **a, int *b, int *c) {
     __shared__ int tmp[t];
     int i = blockIdx.y;
     int j = threadIdx.x;
-    tmp[j] = a[i][j] * b[j];
+    tmp[j] = a[i * M + j] * b[j];
     __syncthreads();
     if (threadIdx.x == 0) {
         int sum = 0;
-        for (int k = 0; k < 16; j++) sum += tmp[k];
+        for (int k = 0; k < 16; k++) sum += tmp[k];
         atomicAdd(&c[i], sum);
     }
 }
 
 int main() {
-    int **a, *b, *c;
-    int **d_a, *d_b, *d_c;
+    int *a, *b, *c;
+    int *d_a, *d_b, *d_c;
     dim3 grid(16, 1);
     dim3 block(1, 16);
     // variables pour le calcule du temps
@@ -29,23 +29,18 @@ int main() {
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     // allocation
-    a = (int **)malloc(N * sizeof(int *));
-    for (int i = 0; i < N; i++) a[i] = (int *)malloc(M * sizeof(int));
+    a = (int *)malloc(N * M * sizeof(int));
     b = (int *)malloc(M * sizeof(int));
     c = (int *)malloc(N * sizeof(int));
     // init
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) a[i][j] = i == j;
-    }
+    for (int i = 0; i < N * M; i++) a[i] = (i / M) == (i % M);
     for (int i = 0; i < M; i++) b[i] = i;
     // allocation mem GPU
-    cudaMalloc((void **)&d_a, N * sizeof(int *));
-    for (int i = 0; i < N; i++) cudaMalloc((void **)&d_a[i], M * sizeof(int));
+    cudaMalloc((void **)&d_a, N * M * sizeof(int));
     cudaMalloc((void **)&d_b, M * sizeof(int));
     cudaMalloc((void **)&d_c, N * sizeof(int));
     // cpy data
-    for (int i = 0; i < N; i++)
-        cudaMemcpy(d_a[i], a[i], M * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_a, a, N * M * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_b, b, M * sizeof(int), cudaMemcpyHostToDevice);
     // call kernel
     cudaEventRecord(start, 0);
