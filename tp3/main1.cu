@@ -4,7 +4,7 @@
 #define N 16
 #define M 16
 
-__global__ void prod(int **a, int *b, int *c) {
+__global__ void prod(int *a, int *b, int *c) {
     const int t = 16;
     __shared__ int tmp[t];
     int i = blockIdx.y;
@@ -56,12 +56,10 @@ int main() {
     for (int i = 0; i < N; i++) printf("%d ", c[i]);
     printf("\n");
     // free mem gpu
-    for (int i = 0; i < N; i++) cudaFree(d_a[i]);
     cudaFree(d_a);
     cudaFree(d_b);
     cudaFree(d_c);
     // free mem
-    for (int i = 0; i < N; i++) free(a[i]);
     free(a);
     free(b);
     free(c);
