@@ -32,14 +32,14 @@ int main() {
     b = (int *)malloc(M * sizeof(int));
     c = (int *)malloc(N * sizeof(int));
     // init
-    for (int i = 0; i < N; i++) a[i][j] = 1;
+    for (int i = 0; i < N * M; i++) a[i] = 1;
     for (int i = 0; i < M; i++) b[i] = i;
     // allocation mem GPU
     cudaMalloc((void **)&d_a, N * M * sizeof(int));
     cudaMalloc((void **)&d_b, M * sizeof(int));
     cudaMalloc((void **)&d_c, N * sizeof(int));
     // cpy data
-    cudaMemcpy(d_a, a, M * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_a, a, N * M * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_b, b, M * sizeof(int), cudaMemcpyHostToDevice);
     // call kernel
     cudaEventRecord(start, 0);
