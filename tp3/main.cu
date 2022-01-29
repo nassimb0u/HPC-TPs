@@ -9,8 +9,8 @@ __global__ void prod(int *a, int *b, int *c) {
     int j = (blockIdx.x * blockDim.x + threadIdx.x) * 2;
     int tmp1 = a[i * M + j] * b[j] + a[i * M + j + 1] * b[j + 1];
     int tmp2 = a[(i + 1) * M + j] * b[j] + a[(i + 1) * M + j + 1] * b[j + 1];
-    atomicAdd(&c[i], tmp1);
-    atomicAdd(&c[i + 1], tmp2);
+    atomicAdd(c + i, tmp1);
+    atomicAdd(c + i + 1, tmp2);
 }
 
 int main() {

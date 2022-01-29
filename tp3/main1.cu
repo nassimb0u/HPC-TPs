@@ -14,7 +14,7 @@ __global__ void prod(int *a, int *b, int *c) {
     if (threadIdx.x == 0) {
         int sum = 0;
         for (int k = 0; k < 16; k++) sum += tmp[k];
-        atomicAdd(&c[i], sum);
+        atomicAdd(c + i, sum);
     }
 }
 
