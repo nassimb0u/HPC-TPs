@@ -1,13 +1,10 @@
-% %
-    cu
 #include <stdio.h>
 #include <stdlib.h>
 
 #define N 16
 #define M 16
 
-        __global__ void
-        prod(int **a, int *b, int *c) {
+__global__ void prod(int **a, int *b, int *c) {
     const int t = 16;
     __shared__ int tmp[t];
     int i = (blockIdx.y * blockDim.y + threadIdx.y) * 2;
@@ -16,7 +13,7 @@
     tmp[i + 1] = a[i + 1][j] * b[j] + a[i + 1][j + 1] * b[j + 1];
     __syncthreads();
     if (threadIdx.x == 0 && threadIdx.y == 0) {
-        for (int k = 0; k < 4; k++) atomicAdd(c + i + k, tmp[i + k]);
+        for (int k = 0; k < 4; k++) atomicAdd(&c[i + k], tmp[i + k]);
     }
 }
 
@@ -37,12 +34,12 @@ int main() {
     c = (int *)malloc(N * sizeof(int));
     // init
     for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) a[i][j] = i + j;
+        for (int j = 0; j < M; j++) a[i][j] = i == j;
     }
-    for (int i = 0; i < M; i++) b[i] = 1;
+    for (int i = 0; i < M; i++) b[i] = i;
     // allocation mem GPU
     cudaMalloc((void **)&d_a, N * sizeof(int *));
-    for (int i = 0; i < N; i++) cudaMalloc((void **)d_a + i, M * sizeof(int));
+    for (int i = 0; i < N; i++) cudaMalloc((void **)&d_a[i], M * sizeof(int));
     cudaMalloc((void **)&d_b, M * sizeof(int));
     cudaMalloc((void **)&d_c, N * sizeof(int));
     // cpy data

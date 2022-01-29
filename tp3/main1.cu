@@ -14,7 +14,7 @@ __global__ void prod(int **a, int *b, int *c) {
     if (threadIdx.x == 0) {
         int sum = 0;
         for (int k = 0; k < 16; j++) sum += tmp[k];
-        atomicAdd(c + i, sum);
+        atomicAdd(&c[i], sum);
     }
 }
 
@@ -35,12 +35,12 @@ int main() {
     c = (int *)malloc(N * sizeof(int));
     // init
     for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) a[i][j] = i + j;
+        for (int j = 0; j < M; j++) a[i][j] = i == j;
     }
-    for (int i = 0; i < M; i++) b[i] = 1;
+    for (int i = 0; i < M; i++) b[i] = i;
     // allocation mem GPU
     cudaMalloc((void **)&d_a, N * sizeof(int *));
-    for (int i = 0; i < N; i++) cudaMalloc((void **)d_a + i, M * sizeof(int));
+    for (int i = 0; i < N; i++) cudaMalloc((void **)&d_a[i], M * sizeof(int));
     cudaMalloc((void **)&d_b, M * sizeof(int));
     cudaMalloc((void **)&d_c, N * sizeof(int));
     // cpy data
