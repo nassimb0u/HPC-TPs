@@ -5,16 +5,12 @@
 #define M 16
 
 __global__ void prod(int *a, int *b, int *c) {
-    const int t = 16;
-    __shared__ int tmp[t];
     int i = (blockIdx.y * blockDim.y + threadIdx.y) * 2;
     int j = (blockIdx.x * blockDim.x + threadIdx.x) * 2;
-    tmp[i] = a[i * M + j] * b[j] + a[i * M + j + 1] * b[j + 1];
-    tmp[i + 1] = a[(i + 1) * M + j] * b[j] + a[(i + 1) * M + j + 1] * b[j + 1];
-    __syncthreads();
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        for (int k = 0; k < 4; k++) atomicAdd(&c[i + k], tmp[i + k]);
-    }
+    int tmp1 = a[i * M + j] * b[j] + a[i * M + j + 1] * b[j + 1];
+    int tmp2 = a[(i + 1) * M + j] * b[j] + a[(i + 1) * M + j + 1] * b[j + 1];
+    atomicAdd(&c[i], tmp1);
+    atomicAdd(&c[i + 1], tmp2);
 }
 
 int main() {
